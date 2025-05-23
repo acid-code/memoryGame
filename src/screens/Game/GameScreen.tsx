@@ -6,7 +6,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Card } from '../../components/Card/Card';
 import { RootState } from '../../store';
 import { updateBestScore } from '../../store/slices/cardSetsSlice';
+import { Card as CardType } from '../../types';
 import { NavigationProp } from '../../types/navigation';
+
+// Fisher-Yates shuffle algorithm
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
 
 export const GameScreen = () => {
   const route = useRoute();
@@ -17,10 +28,19 @@ export const GameScreen = () => {
   const [score, setScore] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [shuffledCards, setShuffledCards] = useState<CardType[]>([]);
+  const [isFlipped, setIsFlipped] = useState(false);
 
   const cardSet = useSelector((state: RootState) =>
     state.cardSets.sets.find(set => set.id === setId)
   );
+
+  // Initialize shuffled cards when component mounts
+  useEffect(() => {
+    if (cardSet) {
+      setShuffledCards(shuffleArray(cardSet.cards));
+    }
+  }, [cardSet]);
 
   useEffect(() => {
     if (!startTime) {
@@ -46,7 +66,8 @@ export const GameScreen = () => {
 
   const handleCorrect = () => {
     setScore(score + 1);
-    if (currentIndex < cardSet.cards.length - 1) {
+    if (currentIndex < shuffledCards.length - 1) {
+      setIsFlipped(false);
       setCurrentIndex(currentIndex + 1);
     } else {
       handleGameEnd();
@@ -54,7 +75,8 @@ export const GameScreen = () => {
   };
 
   const handleIncorrect = () => {
-    if (currentIndex < cardSet.cards.length - 1) {
+    if (currentIndex < shuffledCards.length - 1) {
+      setIsFlipped(false);
       setCurrentIndex(currentIndex + 1);
     } else {
       handleGameEnd();
@@ -62,7 +84,7 @@ export const GameScreen = () => {
   };
 
   const handleGameEnd = () => {
-    const finalScore = Math.round((score / cardSet.cards.length) * 100);
+    const finalScore = Math.round((score / shuffledCards.length) * 100);
     dispatch(updateBestScore({ setId, score: finalScore }));
     
     Alert.alert(
@@ -76,6 +98,8 @@ export const GameScreen = () => {
             setScore(0);
             setStartTime(Date.now());
             setElapsedTime(0);
+            setIsFlipped(false);
+            setShuffledCards(shuffleArray(cardSet.cards));
           },
         },
         {
@@ -94,7 +118,13 @@ export const GameScreen = () => {
       </View>
 
       <View style={styles.cardContainer}>
-        <Card card={cardSet.cards[currentIndex]} />
+        {shuffledCards.length > 0 && (
+          <Card 
+            card={shuffledCards[currentIndex]} 
+            isFlipped={isFlipped}
+            direction="next"
+          />
+        )}
       </View>
 
       <View style={styles.controls}>

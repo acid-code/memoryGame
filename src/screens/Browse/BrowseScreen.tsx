@@ -104,7 +104,6 @@ export const BrowseScreen = () => {
         {cardSet.cards.length > 0 ? (
           <Card 
             card={cardSet.cards[currentIndex]} 
-            onPress={handleNext}
             direction={navigationDirection}
           />
         ) : (

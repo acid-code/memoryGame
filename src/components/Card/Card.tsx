@@ -4,6 +4,7 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withSequence,
   withSpring
 } from 'react-native-reanimated';
@@ -11,7 +12,6 @@ import { Card as CardType } from '../../types';
 
 interface CardProps {
   card: CardType;
-  onPress?: () => void;
   isFlipped?: boolean;
   direction?: 'next' | 'prev';
 }
@@ -33,7 +33,7 @@ const SWAY_CONFIG = {
   mass: 0.3,
 };
 
-export const Card: React.FC<CardProps> = ({ card, onPress, isFlipped = false, direction = 'next' }) => {
+export const Card: React.FC<CardProps> = ({ card, isFlipped = false, direction = 'next' }) => {
   const [flipped, setFlipped] = useState(isFlipped);
   const rotation = useSharedValue(0);
   const translateX = useSharedValue(0);
@@ -54,7 +54,10 @@ export const Card: React.FC<CardProps> = ({ card, onPress, isFlipped = false, di
 
   const flipCard = () => {
     setFlipped(!flipped);
-    rotation.value = withSpring(flipped ? 0 : 180, SPRING_CONFIG);
+    rotation.value = withSequence(
+      withSpring(flipped ? 0 : 180, SPRING_CONFIG),
+      withDelay(800, withSpring(flipped ? 0 : 180, SPRING_CONFIG))
+    );
   };
 
   const frontAnimatedStyle = useAnimatedStyle(() => {
@@ -90,13 +93,7 @@ export const Card: React.FC<CardProps> = ({ card, onPress, isFlipped = false, di
   return (
     <TouchableOpacity
       activeOpacity={0.9}
-      onPress={() => {
-        flipCard();
-        // Wait 800ms before triggering navigation
-        setTimeout(() => {
-          onPress?.();
-        }, 800);
-      }}
+      onPress={flipCard}
       style={styles.container}
     >
       <Animated.View style={[styles.card, frontAnimatedStyle]}>
