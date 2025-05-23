@@ -1,9 +1,12 @@
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 export type RootStackParamList = {
   Home: undefined;
   Game: { setId: string };
   Browse: { setId: string };
+  AddCards: { setId: string };
 };
 
-export type NavigationProp = NativeStackNavigationProp<RootStackParamList>; 
+export type NavigationProp = {
+  navigate: (screen: keyof RootStackParamList, params?: any) => void;
+  goBack: () => void;
+}; 

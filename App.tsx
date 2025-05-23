@@ -3,14 +3,16 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider } from 'react-redux';
+import { AddCardsScreen } from './src/screens/AddCards/AddCardsScreen';
 import { BrowseScreen } from './src/screens/Browse/BrowseScreen';
 import { GameScreen } from './src/screens/Game/GameScreen';
 import { HomeScreen } from './src/screens/Home/HomeScreen';
 import { loadCardSets } from './src/services/storage';
 import { store } from './src/store';
 import { addCardSet } from './src/store/slices/cardSetsSlice';
+import { RootStackParamList } from './src/types/navigation';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppContent() {
   useEffect(() => {
@@ -51,6 +53,7 @@ function AppContent() {
           component={BrowseScreen} 
           options={{ title: 'Browse Sets' }} 
         />
+        <Stack.Screen name="AddCards" component={AddCardsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
