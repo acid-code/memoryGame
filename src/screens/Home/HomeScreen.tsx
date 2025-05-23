@@ -26,7 +26,7 @@ export const HomeScreen = () => {
 
       const newSet: CardSet = {
         id: `set_${Date.now()}`,
-        name: file.name || 'Imported Set',
+        name: file.name?.replace('.json', '').replace('.txt', '') || 'Imported Set',
         cards,
         bestScore: 0,
         createdAt: new Date().toISOString(),
@@ -63,7 +63,7 @@ export const HomeScreen = () => {
           onPress={handleImportFile}
         >
           <Icon name="file-upload" size={24} color="#fff" />
-          <Text style={styles.buttonText}>Import File</Text>
+          <Text style={styles.buttonText}>Import Set</Text>
         </TouchableOpacity>
         
         <TouchableOpacity

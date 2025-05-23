@@ -4,6 +4,7 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch, useSelector } from 'react-redux';
 import { Card } from '../../components/Card/Card';
+import { exportCardSet } from '../../services/fileParser';
 import { RootState } from '../../store';
 import { removeCardSet } from '../../store/slices/cardSetsSlice';
 import { NavigationProp } from '../../types/navigation';
@@ -50,6 +51,19 @@ export const BrowseScreen = () => {
     navigation.navigate('AddCards', { setId });
   };
 
+  const handleExportSet = async () => {
+    try {
+      const fileUri = await exportCardSet(cardSet);
+      if (!fileUri) {
+        Alert.alert('Error', 'Failed to export card set');
+        return;
+      }
+    } catch (error) {
+      console.error('Error exporting set:', error);
+      Alert.alert('Error', 'Failed to export card set');
+    }
+  };
+
   const handleDeleteSet = () => {
     Alert.alert(
       'Delete Set',
@@ -88,14 +102,21 @@ export const BrowseScreen = () => {
             onPress={handleStartGame}
           >
             <Icon name="play-arrow" size={24} color="#fff" />
-            <Text style={styles.buttonText}>Start Game</Text>
+            <Text style={styles.buttonText}>Play</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.exportButton]}
+            onPress={handleExportSet}
+          >
+            <Icon name="file-download" size={24} color="#fff" />
+            <Text style={styles.buttonText}>Export</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, styles.deleteButton]}
             onPress={handleDeleteSet}
           >
             <Icon name="delete" size={24} color="#fff" />
-            <Text style={styles.buttonText}>Delete Set</Text>
+            <Text style={styles.buttonText}>Delete</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -166,8 +187,6 @@ const styles = StyleSheet.create({
   },
   headerButtons: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 8,
     flexWrap: 'wrap',
     gap: 8,
   },
@@ -175,18 +194,24 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
+    marginBottom: 16,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
     borderRadius: 8,
+    minWidth: 100,
+    justifyContent: 'center',
   },
   addButton: {
     backgroundColor: '#4CAF50',
   },
   gameButton: {
-    backgroundColor: '#f4511e',
+    backgroundColor: '#2196F3',
+  },
+  exportButton: {
+    backgroundColor: '#FF9800',
   },
   deleteButton: {
     backgroundColor: '#f44336',
@@ -206,6 +231,7 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 32,
   },
   emptyText: {
     fontSize: 18,
@@ -220,7 +246,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   navButton: {
-    backgroundColor: '#f4511e',
+    backgroundColor: '#2196F3',
     padding: 12,
     borderRadius: 8,
   },
@@ -229,6 +255,6 @@ const styles = StyleSheet.create({
   },
   counter: {
     fontSize: 16,
-    color: '#333',
+    color: '#666',
   },
 }); 

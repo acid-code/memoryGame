@@ -9,6 +9,13 @@ import { updateBestScore } from '../../store/slices/cardSetsSlice';
 import { Card as CardType } from '../../types';
 import { NavigationProp } from '../../types/navigation';
 
+interface CardPerformance {
+  cardId: string;
+  correctCount: number;
+  incorrectCount: number;
+  lastAttempt: 'correct' | 'incorrect' | null;
+}
+
 // Fisher-Yates shuffle algorithm
 const shuffleArray = <T,>(array: T[]): T[] => {
   const shuffled = [...array];
@@ -30,14 +37,26 @@ export const GameScreen = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [shuffledCards, setShuffledCards] = useState<CardType[]>([]);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [cardPerformance, setCardPerformance] = useState<Record<string, CardPerformance>>({});
+  const [isPlaying, setIsPlaying] = useState(true);
 
   const cardSet = useSelector((state: RootState) =>
     state.cardSets.sets.find(set => set.id === setId)
   );
 
-  // Initialize shuffled cards when component mounts
+  // Initialize shuffled cards and card performance tracking
   useEffect(() => {
     if (cardSet) {
+      const initialPerformance: Record<string, CardPerformance> = {};
+      cardSet.cards.forEach(card => {
+        initialPerformance[card.id] = {
+          cardId: card.id,
+          correctCount: 0,
+          incorrectCount: 0,
+          lastAttempt: null
+        };
+      });
+      setCardPerformance(initialPerformance);
       setShuffledCards(shuffleArray(cardSet.cards));
     }
   }, [cardSet]);
@@ -56,6 +75,39 @@ export const GameScreen = () => {
     return () => clearInterval(timer);
   }, [startTime]);
 
+  const calculateSuccessRate = () => {
+    const totalAttempts = Object.values(cardPerformance).reduce(
+      (sum, perf) => sum + perf.correctCount + perf.incorrectCount,
+      0
+    );
+    if (totalAttempts === 0) return 0;
+    const totalCorrect = Object.values(cardPerformance).reduce(
+      (sum, perf) => sum + perf.correctCount,
+      0
+    );
+    return (totalCorrect / totalAttempts) * 100;
+  };
+
+  const getNextCardSet = () => {
+    const performanceArray = Object.values(cardPerformance);
+    const strugglingCards = performanceArray
+      .filter(perf => perf.incorrectCount > perf.correctCount)
+      .map(perf => cardSet?.cards.find(card => card.id === perf.cardId))
+      .filter((card): card is CardType => card !== undefined);
+
+    const otherCards = cardSet?.cards.filter(
+      card => !strugglingCards.some(sc => sc.id === card.id)
+    ) || [];
+
+    // Prioritize struggling cards but include some other cards for variety
+    const nextSet = [
+      ...shuffleArray(strugglingCards),
+      ...shuffleArray(otherCards).slice(0, Math.max(3, Math.floor(otherCards.length / 2)))
+    ];
+
+    return shuffleArray(nextSet);
+  };
+
   if (!cardSet) {
     return (
       <View style={styles.container}>
@@ -65,49 +117,114 @@ export const GameScreen = () => {
   }
 
   const handleCorrect = () => {
+    const currentCard = shuffledCards[currentIndex];
+    setCardPerformance(prev => ({
+      ...prev,
+      [currentCard.id]: {
+        ...prev[currentCard.id],
+        correctCount: prev[currentCard.id].correctCount + 1,
+        lastAttempt: 'correct'
+      }
+    }));
+
     setScore(score + 1);
     if (currentIndex < shuffledCards.length - 1) {
       setIsFlipped(false);
       setCurrentIndex(currentIndex + 1);
     } else {
-      handleGameEnd();
+      handleRoundEnd();
     }
   };
 
   const handleIncorrect = () => {
+    const currentCard = shuffledCards[currentIndex];
+    setCardPerformance(prev => ({
+      ...prev,
+      [currentCard.id]: {
+        ...prev[currentCard.id],
+        incorrectCount: prev[currentCard.id].incorrectCount + 1,
+        lastAttempt: 'incorrect'
+      }
+    }));
+
     if (currentIndex < shuffledCards.length - 1) {
       setIsFlipped(false);
       setCurrentIndex(currentIndex + 1);
     } else {
-      handleGameEnd();
+      handleRoundEnd();
     }
   };
 
-  const handleGameEnd = () => {
-    const finalScore = Math.round((score / shuffledCards.length) * 100);
-    dispatch(updateBestScore({ setId, score: finalScore }));
+  const handleRoundEnd = () => {
+    const successRate = calculateSuccessRate();
+    const roundScore = Math.round((score / shuffledCards.length) * 100);
     
-    Alert.alert(
-      'Game Over',
-      `Your score: ${finalScore}%\nTime: ${elapsedTime} seconds`,
-      [
-        {
-          text: 'Play Again',
-          onPress: () => {
-            setCurrentIndex(0);
-            setScore(0);
-            setStartTime(Date.now());
-            setElapsedTime(0);
-            setIsFlipped(false);
-            setShuffledCards(shuffleArray(cardSet.cards));
+    if (successRate === 100) {
+      // Perfect mastery achieved
+      dispatch(updateBestScore({ setId, score: 100 }));
+      Alert.alert(
+        'Perfect Mastery!',
+        `Congratulations! You've mastered all cards!\nTime: ${elapsedTime} seconds`,
+        [
+          {
+            text: 'Play Again',
+            onPress: () => {
+              setCurrentIndex(0);
+              setScore(0);
+              setStartTime(Date.now());
+              setElapsedTime(0);
+              setIsFlipped(false);
+              setShuffledCards(shuffleArray(cardSet.cards));
+              // Reset performance tracking
+              const initialPerformance: Record<string, CardPerformance> = {};
+              cardSet.cards.forEach(card => {
+                initialPerformance[card.id] = {
+                  cardId: card.id,
+                  correctCount: 0,
+                  incorrectCount: 0,
+                  lastAttempt: null
+                };
+              });
+              setCardPerformance(initialPerformance);
+            },
           },
-        },
-        {
-          text: 'Back to Set',
-          onPress: () => navigation.goBack(),
-        },
-      ]
-    );
+          {
+            text: 'Back to Set',
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
+    } else {
+      // Continue with next round
+      Alert.alert(
+        'Round Complete',
+        `Round Score: ${roundScore}%\nOverall Success Rate: ${Math.round(successRate)}%`,
+        [
+          {
+            text: 'Continue',
+            onPress: () => {
+              setCurrentIndex(0);
+              setScore(0);
+              setShuffledCards(getNextCardSet());
+              setIsFlipped(false);
+            },
+          },
+          {
+            text: 'End Game',
+            onPress: () => {
+              dispatch(updateBestScore({ setId, score: Math.round(successRate) }));
+              navigation.goBack();
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  const handleStopGame = () => {
+    const successRate = calculateSuccessRate();
+    dispatch(updateBestScore({ setId, score: Math.round(successRate) }));
+    navigation.goBack();
   };
 
   return (
@@ -115,6 +232,9 @@ export const GameScreen = () => {
       <View style={styles.header}>
         <Text style={styles.title}>Score: {score}</Text>
         <Text style={styles.timer}>Time: {elapsedTime}s</Text>
+        <TouchableOpacity onPress={handleStopGame} style={styles.stopButton}>
+          <Icon name="stop" size={24} color="#f44336" />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.cardContainer}>
@@ -173,6 +293,9 @@ const styles = StyleSheet.create({
   timer: {
     fontSize: 18,
     color: '#666',
+  },
+  stopButton: {
+    padding: 8,
   },
   cardContainer: {
     flex: 1,
