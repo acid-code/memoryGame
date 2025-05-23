@@ -1,50 +1,93 @@
-# Welcome to your Expo app 👋
+# Memory Game
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native Expo application for creating and playing memory card games. Import cards from text files, play memory games, and track your progress.
 
-## Get started
+## Features
 
-1. Install dependencies
+- Import cards from text files (PDF support coming soon)
+- Create and manage multiple card sets
+- Play memory games with scoring
+- Browse cards in a set
+- Track best scores
+- Local storage for card sets
+- Export/Import functionality for sharing sets
 
-   ```bash
-   npm install
-   ```
+## Getting Started
 
-2. Start the app
+### Prerequisites
 
-   ```bash
-   npx expo start
-   ```
+- Node.js (v14 or later)
+- npm or yarn
+- Expo CLI
+- Android Studio (for Android development)
 
-In the output, you'll find options to open the app in a
+### Installation
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+1. Clone the repository:
 ```bash
-npm run reset-project
+git clone <repository-url>
+cd memoryGame
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Install dependencies:
+```bash
+npm install
+```
 
-## Learn more
+3. Start the development server:
+```bash
+npm start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+4. Run on Android:
+```bash
+npm run android
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Usage
 
-## Join the community
+### Creating Card Sets
 
-Join our community of developers creating universal apps.
+1. Click "New Set" to create an empty set
+2. Click "Import File" to import cards from a text file
+   - Text files should have pairs of lines (front and back of cards)
+   - Each pair should be separated by a newline
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Playing the Game
+
+1. Select a card set from the home screen
+2. Click "Start Game" in the browse view
+3. Mark cards as correct or incorrect
+4. Track your score and time
+5. Try to beat your best score!
+
+### Managing Cards
+
+- Browse through cards using the navigation buttons
+- Add new cards manually
+- Remove cards from sets
+- Export sets to share with others
+- Import sets from other devices
+
+## File Format
+
+Text files should be formatted as follows:
+```
+Front of card 1
+Back of card 1
+Front of card 2
+Back of card 2
+...
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
