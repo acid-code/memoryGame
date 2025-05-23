@@ -13,6 +13,7 @@ interface CardProps {
   card: CardType;
   onPress?: () => void;
   isFlipped?: boolean;
+  direction?: 'next' | 'prev';
 }
 
 const { width } = Dimensions.get('window');
@@ -32,7 +33,7 @@ const SWAY_CONFIG = {
   mass: 0.3,
 };
 
-export const Card: React.FC<CardProps> = ({ card, onPress, isFlipped = false }) => {
+export const Card: React.FC<CardProps> = ({ card, onPress, isFlipped = false, direction = 'next' }) => {
   const [flipped, setFlipped] = useState(isFlipped);
   const rotation = useSharedValue(0);
   const translateX = useSharedValue(0);
@@ -40,15 +41,16 @@ export const Card: React.FC<CardProps> = ({ card, onPress, isFlipped = false }) 
   // Reset flip state when card changes
   useEffect(() => {
     // Start with sway animation immediately
+    const swayAmount = direction === 'next' ? -20 : 20;
     translateX.value = withSequence(
-      withSpring(-20, SWAY_CONFIG),
+      withSpring(swayAmount, SWAY_CONFIG),
       withSpring(0, SWAY_CONFIG)
     );
 
     // Reset rotation
     rotation.value = withSpring(0, SPRING_CONFIG);
     setFlipped(false);
-  }, [card.id]);
+  }, [card.id, direction]);
 
   const flipCard = () => {
     setFlipped(!flipped);
@@ -90,7 +92,7 @@ export const Card: React.FC<CardProps> = ({ card, onPress, isFlipped = false }) 
       activeOpacity={0.9}
       onPress={() => {
         flipCard();
-        // Wait 300ms before triggering navigation
+        // Wait 800ms before triggering navigation
         setTimeout(() => {
           onPress?.();
         }, 800);

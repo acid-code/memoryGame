@@ -14,6 +14,7 @@ export const BrowseScreen = () => {
   const dispatch = useDispatch();
   const { setId } = route.params as { setId: string };
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [navigationDirection, setNavigationDirection] = useState<'next' | 'prev'>('next');
 
   const cardSet = useSelector((state: RootState) =>
     state.cardSets.sets.find(set => set.id === setId)
@@ -29,12 +30,14 @@ export const BrowseScreen = () => {
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
+      setNavigationDirection('prev');
       setCurrentIndex(currentIndex - 1);
     }
   };
 
   const handleNext = () => {
     if (currentIndex < cardSet.cards.length - 1) {
+      setNavigationDirection('next');
       setCurrentIndex(currentIndex + 1);
     }
   };
@@ -99,7 +102,11 @@ export const BrowseScreen = () => {
 
       <View style={styles.cardContainer}>
         {cardSet.cards.length > 0 ? (
-          <Card card={cardSet.cards[currentIndex]} />
+          <Card 
+            card={cardSet.cards[currentIndex]} 
+            onPress={handleNext}
+            direction={navigationDirection}
+          />
         ) : (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No cards in this set</Text>
