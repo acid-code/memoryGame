@@ -37,4 +37,5 @@ const additionalInstructions = `
 7. Use Expo's OTA updates for quick deployments
 8. Make sure not to break anything
 9. When trying to debug a problem, filly check for mismatching packages and not just reinstall
+10. If there is an error with a technology or feature, try to fix it without removing it first
 `;

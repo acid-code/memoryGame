@@ -97,6 +97,15 @@ export const BrowseScreen = () => {
             <Icon name="add" size={24} color="#fff" />
             <Text style={styles.buttonText}>Add Cards</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, styles.importButton]}
+            onPress={() => navigation.navigate('ImportCards', { setId })}
+          >
+            <Icon name="file-upload" size={24} color="#fff" />
+            <Text style={styles.buttonText}>Import Cards</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.button, styles.gameButton]}
             onPress={handleStartGame}
@@ -104,6 +113,7 @@ export const BrowseScreen = () => {
             <Icon name="play-arrow" size={24} color="#fff" />
             <Text style={styles.buttonText}>Play</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.button, styles.exportButton]}
             onPress={handleExportSet}
@@ -111,6 +121,7 @@ export const BrowseScreen = () => {
             <Icon name="file-download" size={24} color="#fff" />
             <Text style={styles.buttonText}>Export</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.button, styles.deleteButton]}
             onPress={handleDeleteSet}
@@ -206,6 +217,9 @@ const styles = StyleSheet.create({
   },
   addButton: {
     backgroundColor: '#4CAF50',
+  },
+  importButton: {
+    backgroundColor: '#2196F3',
   },
   gameButton: {
     backgroundColor: '#2196F3',

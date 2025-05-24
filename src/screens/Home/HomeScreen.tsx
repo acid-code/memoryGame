@@ -24,24 +24,27 @@ export const HomeScreen = () => {
 
       const cards = await parseFile(file);
       if (cards.length === 0) {
-        Alert.alert('Error', 'No cards could be created from the file.');
+        Alert.alert('Error', 'No cards could be created from the set file.');
         return;
       }
 
       const newSet: CardSet = {
         id: `set_${Date.now()}`,
         name: file.name?.replace('.json', '').replace('.txt', '') || 'Imported Set',
-        cards,
+        cards: cards.map(card => ({
+          ...card,
+          set: `set_${Date.now()}` // Set the correct set ID for each card
+        })),
         bestScore: 0,
         createdAt: new Date().toISOString(),
         lastModified: new Date().toISOString(),
       };
 
       dispatch(addCardSet(newSet));
-      Alert.alert('Success', `Created ${cards.length} cards from ${file.name || 'the file'}`);
+      Alert.alert('Success', `Imported set "${newSet.name}" with ${cards.length} cards`);
     } catch (error) {
       console.error('Error importing file:', error);
-      Alert.alert('Error', 'Failed to import file');
+      Alert.alert('Error', 'Failed to import set file');
     }
   };
 
@@ -65,6 +68,11 @@ export const HomeScreen = () => {
       'What would you like to do?',
       [
         {
+          text: 'Cancel',
+          style: 'cancel',
+          isPreferred: true,
+        },
+        {
           text: 'Rename',
           onPress: () => {
             setSelectedSet(set);
@@ -80,10 +88,6 @@ export const HomeScreen = () => {
           text: 'Delete',
           style: 'destructive',
           onPress: () => handleDeleteSet(set),
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel',
         },
       ]
     );

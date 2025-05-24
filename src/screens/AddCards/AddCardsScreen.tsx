@@ -87,14 +87,14 @@ export const AddCardsScreen = () => {
     }
   };
 
-  const handleImportFile = async () => {
+  const handleImportFromSet = async () => {
     try {
       const file = await pickDocument();
       if (!file) return;
 
       const cards = await parseFile(file);
       if (cards.length === 0) {
-        Alert.alert('Error', 'No cards could be created from the file.');
+        Alert.alert('Error', 'No cards could be created from the set file.');
         return;
       }
 
@@ -116,17 +116,17 @@ export const AddCardsScreen = () => {
         dispatch(addCard({
           setId,
           card: {
-            ...card,
-            set: setId,
-            createdAt: new Date().toISOString(),
-            lastModified: new Date().toISOString(),
-          },
+            id: card.id,
+            front: card.front,
+            back: card.back,
+            set: setId
+          }
         }));
       });
 
       Alert.alert(
         'Success',
-        `Added ${cards.length} cards from ${file.name || 'the file'}`,
+        `Added ${cards.length} cards from ${file.name || 'the set file'}`,
         [
           {
             text: 'Add More',
@@ -139,8 +139,8 @@ export const AddCardsScreen = () => {
         ]
       );
     } catch (error) {
-      console.error('Error importing file:', error);
-      Alert.alert('Error', 'Failed to import file');
+      console.error('Error importing set:', error);
+      Alert.alert('Error', 'Failed to import set file');
     }
   };
 
@@ -150,10 +150,10 @@ export const AddCardsScreen = () => {
         <Text style={styles.title}>Add Cards to {cardSet.name}</Text>
         <TouchableOpacity
           style={[styles.button, styles.importButton]}
-          onPress={handleImportFile}
+          onPress={handleImportFromSet}
         >
           <Icon name="file-upload" size={24} color="#fff" />
-          <Text style={styles.buttonText}>Import from File</Text>
+          <Text style={styles.buttonText}>Import from Set</Text>
         </TouchableOpacity>
       </View>
 
